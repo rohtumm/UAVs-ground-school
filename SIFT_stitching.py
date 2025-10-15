@@ -8,7 +8,7 @@ while True:
     ret, frame = vid.read()
     if not ret:
         break
-    frames.append(frame)
+    frames.appenpd(frame)
 
 #downsample num of frames 
 frames = frames[::38]
