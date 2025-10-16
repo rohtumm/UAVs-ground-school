@@ -1,0 +1,107 @@
+Firmware: Software that you don't write
+
+1. What is the role of a flight controller in a drone system, and how does it differ from an onboard computer (like a Jetson)?
+	- Flight Controller:
+		- Acts like autonomic nervous system in body
+		- Uses sensors to maintain drone stability
+		- Not autonomous, relies of external commands
+		- Processes radio inputs and executes control loops
+		- Communicates via protocols like MAVLink
+	- Onboard Computer (NVIDIA Jetson):
+		- Functions like the somatic nervous system
+		- Handles more high-level tasks like computer vision, path planning, and autonomy
+		- Runs ROS, object detection, etc.
+		- Sends commands to Flight Controller
+		- Connects via Serial, Ethernet, or USB
+    
+2. What sensors are typically connected to a flight controller?
+	- IMU (Inertial Measurement Unit)
+		- Uses accelerometers and gyroscopes to measure orientation, angular velocity, and linear acceleration
+			- Used for drone stabilization
+		- Many times is combined with magnetometers for heading estimation
+	- Barometers
+		- Measures air pressure, used to control altitude
+	- Magnetometer
+		- Detects Earth's magnetic field to determine heading
+		- Corrects yaw drift and supports navigation in GPS denied environments
+	- GPS module
+		- Provides global position (because we can't integrate accelerometer data), velocity, and time data
+			- Uses satellites to do so, and RTK-real time kinematics (but satellite signals can be blocked)
+			- Each satellite gives a distance between it and you, and you can use triangulation to get a good read on where you are located
+		- Enables waypoint navigation, return-to-home, and geofencing
+		- Magnetic declination: difference in angle between true north and magnetic north
+	- Drone Cameras
+		- Standard RGB cameras
+			- Can send optical data to both FC and jetson (onboard computers generally)
+			- Full color images and video used for mapping/inspection/aerial photography
+			- Usually mounted on a gimbal for stabilized footage
+				- The gimbal can also be controlled (has around 3 servos) through the firmware
+		- What to consider when looking at cameras?
+			- Sensor size, resolution, field of view, frame rate, dynamic range, interface type, and digital vs optical zoom
+	- RC Transmitters and Receivers
+		- RC Transmitter (TX)
+			- Communicates wirelessly with receiver on drone via radio protocols (2.4 GHz radio)
+		- RC Receiver (RX)
+			- Mounted on drone, receives signals from transmitter
+			- Old versions of signal transmission methods used the width of pulses
+
+3. What are the key communication protocols between flight controllers and peripherals (e.g. I2C, CAN, MAVLink)?
+	- Serial (UART)
+		- Direct, basic communication channel between exactly 2 devices
+		- Used for communication between FC and onboard computer, GPS modules, telemetry radios
+		- Simple 2-wire setup: TX and RX
+		- Each UART connection has its own set of wires
+		- Common for MAVLink messages and debugging
+	- CAN (Controller Area Network)
+		- Used a lot on cars
+		- Similar to a device "group chat"
+		- Robust, multi-device protocol used in high end drones
+		- Great for unpredictable environments and long cable runs
+		- Used for smart ESCs, gimbals, advanced sensor networks
+		- Has error checking to prevent miscommunication
+	- I2C / SPI (electronic heavy protocol)
+		- I2C (Inter-Integrated Circuit)
+			- Used for low speed communication with devices like barometers, magnetometers, and IMUs
+			- Shares two wires: SDA (data) and SCL (clock)
+				- Clock is extremely important for interval checking and keeping everything in line
+					- Sends pulse very consistently and everything else reads it and knows when to send data based on that pulse
+		- SPI (Serial Peripheral Interface)
+			- Same as serial/UART but for multiple devices listening to one "master" device
+			- Uses a high speed clock and is suitable for higher data rates
+			- Four signals are:
+				- SCLK
+				- MOSI
+				- MISO
+				- CS
+	- MAVLink
+		- Micro Air Vehicle Link
+			- "Drone Language" for commands and telemetry
+			- Not an actual protocol, it's a message format that runs over Serial, UDP, or CAN
+			- Used to send commands (like takeoff) and receive data
+			- Powers communication between flight controller and onboard computer or ground station
+			- Kind of like when you inspect element and there are a bunch of "tags"
+	- DDS (Data Distribution System)
+		- Kind of like MAVLink but used inside the drone itself
+		- Communication protocol used by ROS 2 and modern drone systems
+		- Has real-time publish-subscribe messaging between modules <- important
+		- Very fast
+		- Powers direct connection between flight controllers and onboard computers
+		- Great for real-time performance (control loops for example)
+		- Over UART connection
+	- Common Setup
+		- MAVLink
+			- Communicates with ground station over UDP
+		- DDS: Communicates between flight controller and onboard computer
+    
+4. How does firmware (e.g. Betaflight) influence the capabilities of the flight controller?
+	- FC firmware
+		- Low level software that runs on drone that we don't develop
+		- Ardupilot, Betaflight, PX4 are examples
+		- Firmware can be configured to optimize your flight characteristics
+			- big/small drone, fast/slow
+		- Has different flight modes (auto-stabilize, full stick control)
+	- PID Control (Proportional Integral Derivative)
+		- Used to control drone pitch over time
+		- Critical damping
+			- System returns to equilibrium position in shortest time possible without oscillating 
+    

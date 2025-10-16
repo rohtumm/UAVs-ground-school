@@ -1,0 +1,54 @@
+
+1. What is Blob Detection?
+	- Good for detecting objects if you have a uniform background
+	- Bad if there's a lot of variation
+	-  Laplacian of Gaussian
+		- 1st: Gaussian blur
+			- Preprocessing step
+			- Convolution with Gaussian kernel
+				- What's a kernel?
+					- Small matrix used to transform a larger image (transformation is just multiple dot products)
+				- The Gaussian kernel basically just takes a weighted average of multiple pixel values to blur the image
+			- Reduces noise before Laplacian
+		- 2nd: Laplacian
+			- Second order derivative in each direction (x,y)
+			- Used for edge detection (at 0 crossings)
+	- It is possible to filter blobs based on certain criteria/thresholds
+2. YOLO Model + ML
+	- Linear Classifier + Perceptron
+		- Based on Biological Neurons
+		- Most simple classifier, classifies data into binary clusters
+	- If there are more than 2 possibilities:
+		- Instead of outputting a single value, we have a set of weight vectors for each possibility
+		- Then we use an activation function to obtain a probability for each outcome
+	- Deep Neural Networks
+		- Adds hidden layers and nonlinear activation functions which allow us to infer on more complex relationships
+		- Common activation functions
+			- Sigmoid
+			- Hyperbolic
+			- ReLU
+			- These introduce nonlinearity in terms of prediction probabilities
+		- Each 'epoch,' we update the weights of our function to improve the model's loss
+			- The way we compute our weights is using gradients (weights = grad f * learning rate (f is the loss function))
+				- Gradient is the vector made up of directional derivatives
+				- Direction of gradient is maximal ascent
+	- How to make our Neural Network better?
+		- Play around with adding more nodes, layers, changing activation function
+		- Train with more data
+		- Add convolutions/pooling
+			- Convolutions: Learned kernels that can extract patterns
+			- Max Pooling: Reduces dimensionality, lessens overfitting, noise reduction
+	- How does YOLO work?
+		- It's a one shot CNN
+			- One pass of the input image to make prediction, making it less accurate but faster
+			- The alternative is two passes of the input image to make a predictions (first shot is used to propose object locations)
+		- The architecture is made up of convolutional layers, pooling layers, and a ReLU activation function
+		- To train a YOLO model, we need to decide on train/validation/test data splits
+			- Train data unsurprisingly is used to train the model
+			- Validation data helps you make decisions on how to tune hyperparameters
+			- Test data is not touched until very end to evaluate how good the model is
+			- A 70/20/10 is standard
+		- One problem with such models is overfitting (fitting exactly to your given data and not generalizing)
+3. Why care about how all these models work?
+	- Because we want to be able to play around with the idea of creating our own custom models and not just use prebuilt ones
+	- This would allow us to have our models be more specific to our tasks, and it gets us creativity points
